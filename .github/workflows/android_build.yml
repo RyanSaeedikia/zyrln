@@ -2,10 +2,9 @@ name: Build Android APK
 on: 
   push:
   pull_request:
-  workflow_dispatch: # اجازه اجرای دستی را می‌دهد
+  workflow_dispatch:
 
 env:
-  # رفع هشدار مربوط به نسخه‌های قدیمی Node.js
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -38,8 +37,10 @@ jobs:
       - name: Build Library (AAR)
         run: |
           mkdir -p android/app/libs
-          # استفاده از پکیج صحیح برای حل ارور Unresolved reference
-          gomobile bind -v -androidapi 21 -o android/app/libs/relay.aar ./mobile
+          # امتحان کردن ریشه پروژه به جای پوشه mobile
+          gomobile bind -v -androidapi 21 -o android/app/libs/relay.aar .
+        # اگر باز هم ارور no exported names داد، یعنی در فایل‌های Go شما 
+        # هیچ تابعی با حرف بزرگ (مثل func Start) وجود ندارد.
 
       - name: Build APK with Gradle
         run: |
