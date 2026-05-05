@@ -2,10 +2,10 @@ name: Build Android APK
 on: 
   push:
   pull_request:
-  workflow_dispatch: # اجازه اجرای دستی از تب Actions را می‌دهد
+  workflow_dispatch: # اجازه اجرای دستی را می‌دهد
 
 env:
-  # رفع هشدار Deprecation و استفاده از جدیدترین نسخه نود جی‌اس در رانر
+  # رفع هشدار مربوط به نسخه‌های قدیمی Node.js
   FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
 
 jobs:
@@ -18,7 +18,7 @@ jobs:
       - name: Set up Go
         uses: actions/setup-go@v5
         with:
-          go-version: '1.23' # نسخه متناسب با کتابخانه‌های پروژه
+          go-version: '1.23'
 
       - name: Set up JDK 17
         uses: actions/setup-java@v4
@@ -29,29 +29,26 @@ jobs:
       - name: Setup Android SDK
         uses: android-actions/setup-android@v3
 
-      - name: Install Gomobile
+      - name: Install Gomobile and Gobind
         run: |
           go install golang.org/x/mobile/cmd/gomobile@latest
           go install golang.org/x/mobile/cmd/gobind@latest
           gomobile init
-        # نصب ابزارهای لازم برای اتصال Go به اندروید
 
       - name: Build Library (AAR)
         run: |
           mkdir -p android/app/libs
-          gomobile bind -v -androidapi 21 -o android/app/libs/relay.aar ./relay/core
-        # تبدیل کدهای Go به کتابخانه قابل فهم برای اندروید
+          # استفاده از پکیج صحیح برای حل ارور Unresolved reference
+          gomobile bind -v -androidapi 21 -o android/app/libs/relay.aar ./mobile
 
-      - name: Build Signed APK
+      - name: Build APK with Gradle
         run: |
           cd android
           chmod +x gradlew
           ./gradlew assembleDebug
-        # اجرای گردل برای ساخت فایل نهایی APK
 
-      - name: Upload Artifact
+      - name: Upload Finished APK
         uses: actions/upload-artifact@v4
         with:
-          name: zyrln-android-debug
+          name: zyrln-android-app
           path: android/app/build/outputs/apk/debug/app-debug.apk
-        # آپلود فایل نهایی برای دانلود شما
